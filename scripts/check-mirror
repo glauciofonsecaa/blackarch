@@ -4,8 +4,8 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 
-BASE_URL='https://www.blackarch.org/blackarch/blackarch/lastupdate'
-MIRROR_LIST='https://raw.githubusercontent.com/BlackArch/blackarch/master/mirror/mirror.lst'
+BASE_URL = 'https://www.blackarch.org/blackarch/blackarch/lastupdate'
+MIRROR_LIST = 'https://raw.githubusercontent.com/BlackArch/blackarch/master/mirror/mirror.lst'
 THX = 25
 TIMEOUT = 10
 
@@ -26,7 +26,7 @@ def check(url, name, lastupdate):
   global states
 
   try:
-    r = requests.get(url, stream=True, timeout=TIMEOUT)
+    r = requests.get(url, stream = True, timeout = TIMEOUT)
     repo_statuscode = r.status_code
     repo_lastupdate = r.text
 
@@ -44,7 +44,6 @@ def check(url, name, lastupdate):
     states['down_num'] = states['down_num'] + 1
 
   return
-
 
 def print_stats(total):
   global states
