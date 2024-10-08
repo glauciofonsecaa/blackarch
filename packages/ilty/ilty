@@ -23,7 +23,7 @@ import curses.ascii, sys
 
 class SignalsContainer:
     sigs = None
-    def __init__(self, p=None):
+    def __init__(self, p = None):
         self.current = 0
         if p is not None:
             self.sigs = p
@@ -92,7 +92,7 @@ class IltyUI:
         if conversation is None:
             self.screen.addstr('Bad conversation selected! WTF?')
             return
-        self.screen.vline(1, self.xsize/2, curses.ACS_VLINE, self.ysize - 2)
+        self.screen.vline(1, self.xsize / 2, curses.ACS_VLINE, self.ysize - 2)
         x = 3
         for p in conversation.parties:
             y = 3
@@ -102,7 +102,7 @@ class IltyUI:
             for msg in phone.screen:
                 self.screen.addstr(y, x, msg)
                 y += 1
-            x += (self.xsize/2)
+            x += (self.xsize / 2)
 
     def waitinput(self):
         # non-blocking mode
@@ -139,7 +139,7 @@ class IltyUI:
             self.screen.addstr(y, self.x, '%d) %s' % (id, conv), selected)
             y += 1
             for party in conv.parties:
-                self.screen.addstr(y, self.x+10, str(party))
+                self.screen.addstr(y, self.x + 10, str(party))
                 y += 1
             id += 1
 
@@ -182,7 +182,7 @@ class IltyUI:
 class Pipe:
     pipe = None
     
-    def __init__(self, cmd='', mode='w'):
+    def __init__(self, cmd = '', mode = 'w'):
         self.pipe = os.popen(cmd, mode)
         self.cmd  = cmd
         
@@ -212,7 +212,7 @@ class Phone:
     listening = 1
     conv = None
     
-    def __init__(self, addr='0.0.0.0', port=0, screen=''):
+    def __init__(self, addr = '0.0.0.0', port = 0, screen = ''):
         if type(addr) is str:
             self.addr = socket.inet_aton(addr)
         else:
@@ -256,7 +256,7 @@ class Party:
     number = 0
     isthecaller = False
     
-    def __init__(self, name='(unknow)', number=0, phone=None, iscaller=False):
+    def __init__(self, name = '(unknow)', number = 0, phone = None, iscaller = False):
         self.name = name
         if phone is not None:
             self.phone = phone
@@ -291,20 +291,20 @@ class Party:
         return self.isthecaller
 
 class Conversation:
-    convid = 0
-    flags = {}
-    caller = ''
-    parties = []
-    enddate   = 0
-    startdate = 0
-    recording=False
-    listening=False
-    piperecord=False
-    pipelisten=False
+    convid      = 0
+    flags       = {}
+    caller      = ''
+    parties     = []
+    enddate     = 0
+    startdate   = 0
+    recording   = False
+    listening   = False
+    piperecord  = False
+    pipelisten  = False
     
-    def __init__(self, convid=0, flags={}, parties=None):
+    def __init__(self, convid = 0, flags = {}, parties = None):
         self.convid = convid
-        self.flags   = dict(flags)
+        self.flags  = dict(flags)
         if parties is not None:
             self.parties = parties[:]
         else:
@@ -329,7 +329,7 @@ class Conversation:
             self.piperecord.close()
 
     def listentome(self, start):
-        self.listening=start
+        self.listening = start
         if self.listening:
             self.pipelisten = Pipe('(sox  -Ub -r 8000 -t .raw - -t .ub -|esdcat -b -m -r 8000) > /dev/null 2>&1')
         else:
@@ -365,7 +365,7 @@ class Conversation:
             self.recordme(True)
             self.listentome(True)
             for p in self.parties:
-                phone=p.getphone()
+                phone = p.getphone()
                 if phone:
                     phone.attach(self)
         elif sig.event == RECORD:
@@ -380,7 +380,7 @@ class Conversation:
                     party.sethost(sig.data)
         elif sig.event == FINISHED:
             for p in self.parties:
-                phone=p.getphone()
+                phone = p.getphone()
                 if phone:
                     phone.detach()
             self.recordme(False)
@@ -663,24 +663,24 @@ class SkinnyEvent(SignalEvent):
         maxSizeName   = 40
         maxSizeNumber = 24
         # callingName + CallingNumber + CalledName + CalledNumber + LineInstance
-        off = offset + 2*(maxSizeNumber+maxSizeName) + 4
+        off = offset + 2 * (maxSizeNumber + maxSizeName) + 4
 
-        if size < off+8:
+        if size < off + 8:
             return
         
-        self.convid  = struct.unpack('I', payload[off:off+4])[0]
+        self.convid  = struct.unpack('I', payload[off:off + 4])[0]
         self.sigcontainer.add(SignalEvent(  about=ABOUT_CONVERSATION
                                             , event=CREATE
                                             , convid=self.convid))
 
-        name1 = self.string_nullpadded(payload[offset:offset+maxSizeName])
+        name1 = self.string_nullpadded(payload[offset:offset + maxSizeName])
         offset += maxSizeName
-        number1  = self.string_nullpadded(payload[offset:offset+maxSizeNumber])
+        number1  = self.string_nullpadded(payload[offset:offset + maxSizeNumber])
         offset += maxSizeNumber
 
-        name2   = self.string_nullpadded(payload[offset:offset+maxSizeName])
+        name2   = self.string_nullpadded(payload[offset:offset + maxSizeName])
         offset += maxSizeName
-        number2 = self.string_nullpadded(payload[offset:offset+maxSizeNumber])
+        number2 = self.string_nullpadded(payload[offset:offset + maxSizeNumber])
 
         global phones
         if not phones.has_key(self.daddr):
@@ -689,13 +689,13 @@ class SkinnyEvent(SignalEvent):
         if not phones.has_key(self.saddr):
             phones[self.saddr] = Phone(self.saddr)
 
-        calltype = struct.unpack('!I', payload[offset+8:offset+12])[0]        
+        calltype = struct.unpack('!I', payload[offset + 8:offset + 12])[0]        
         if calltype == 2:
-            pcaller = Party(name=name2, number=number2, iscaller=True, phone=phones[self.saddr])
-            pcalled = Party(name=name1, number=number1, phone=phones[self.daddr])
+            pcaller = Party(name = name2, number = number2, iscaller = True, phone = phones[self.saddr])
+            pcalled = Party(name = name1, number = number1, phone = phones[self.daddr])
         else:
-            pcalled = Party(name=name1, number=number1, iscaller=True, phone=phones[self.daddr])
-            pcaller = Party(name=name2, number=number2, phone=phones[self.saddr])
+            pcalled = Party(name = name1, number = number1, iscaller = True, phone = phones[self.daddr])
+            pcaller = Party(name = name2, number = number2, phone = phones[self.saddr])
 
         self.sigcontainer.add(SignalEvent( about = ABOUT_CONVERSATION
                                            , event = ADD
@@ -721,18 +721,18 @@ class SkinnyEvent(SignalEvent):
         
         self.about = ABOUT_CONVERSATION
         self.event = MAP_CONFID
-        self.convid = struct.unpack('I', payload[offset:offset+4])[0]
-        self.passthruid = struct.unpack('I', payload[offset+4:offset+8])[0]
+        self.convid = struct.unpack('I', payload[offset:offset + 4])[0]
+        self.passthruid = struct.unpack('I', payload[offset + 4: offset + 8])[0]
         self.sigcontainer.add(self)
         
     def parse_open_receive_channel_ack_message(self, payload, offset, size):
         global phones
-        if size < 4 or struct.unpack('I', payload[offset:offset+4])[0] != 0:
+        if size < 4 or struct.unpack('I', payload[offset: offset + 4])[0] != 0:
             return
         
-        self.addr = struct.unpack('!I', payload[offset+4:offset+8])[0]
-        self.port = struct.unpack('I', payload[offset+8:offset+12])[0]
-        self.passthruid = struct.unpack('I', payload[offset+12:offset+16])[0]
+        self.addr = struct.unpack('!I', payload[offset + 4:offset + 8])[0]
+        self.port = struct.unpack('I', payload[offset + 8:offset + 12])[0]
+        self.passthruid = struct.unpack('I', payload[offset + 12:offset + 16])[0]
         self.about  = ABOUT_CONVERSATION
         self.event  = ASSIGN_CALLER
         if phones.has_key(self.addr):
@@ -749,16 +749,16 @@ class SkinnyEvent(SignalEvent):
         if size < 16:
             return
 
-        self.convid  = struct.unpack('I', payload[offset:offset+4])[0]
-        self.passthruid = struct.unpack('I', payload[offset+4:offset+8])[0]
-        self.addr =  struct.unpack('!I', payload[offset+8:offset+12])[0]
-        self.port = struct.unpack('I', payload[offset+12:offset+16])[0]
-        self.sigcontainer.add(SignalEvent(  about=ABOUT_CONVERSATION
-                                            , event=LISTEN
-                                            , convid=self.convid))
-        self.sigcontainer.add(SignalEvent(  about=ABOUT_CONVERSATION
-                                            , event=LIVE
-                                            , convid=self.convid))
+        self.convid  = struct.unpack('I', payload[offset:offset + 4])[0]
+        self.passthruid = struct.unpack('I', payload[offset + 4:offset + 8])[0]
+        self.addr =  struct.unpack('!I', payload[offset + 8:offset + 12])[0]
+        self.port = struct.unpack('I', payload[offset + 12:offset + 16])[0]
+        self.sigcontainer.add(SignalEvent(  about   = ABOUT_CONVERSATION
+                                            , event = LISTEN
+                                            , convid = self.convid))
+        self.sigcontainer.add(SignalEvent(  about = ABOUT_CONVERSATION
+                                            , event = LIVE
+                                            , convid = self.convid))
         self.about = ABOUT_CONVERSATION
         self.event = ASSIGN
         if not phones.has_key(self.addr):
@@ -769,7 +769,7 @@ class SkinnyEvent(SignalEvent):
     def parse_close_media_transmission(self, payload, offset, size):
         if size < 4:
             return
-        self.convid = struct.unpack('I', payload[offset:offset+4])[0]
+        self.convid = struct.unpack('I', payload[offset: offset + 4])[0]
         self.about  = ABOUT_CONVERSATION
         self.event  = FINISHED
         self.sigcontainer.add(self)
@@ -777,16 +777,16 @@ class SkinnyEvent(SignalEvent):
     def parse_define_time_date(self, addr, payload, offset, size):
         if size < 24:
             print 'too short'
-            return
-        day = struct.unpack('I', payload[offset:offset+4])[0]
+            return\
+        day = struct.unpack('I', payload[offset: offset + 4])[0]
         offset += 4
-        month = struct.unpack('I', payload[offset:offset+4])[0]
+        month = struct.unpack('I', payload[offset: offset + 4])[0]
         offset += 8
-        year = struct.unpack('I', payload[offset:offset+4])[0]
+        year = struct.unpack('I', payload[offset: offset + 4])[0]
         offset += 4
-        hour = struct.unpack('I', payload[offset:offset+4])[0]
+        hour = struct.unpack('I', payload[offset: offset + 4])[0]
         offset += 4
-        minute = struct.unpack('I', payload[offset:offset+4])[0]
+        minute = struct.unpack('I', payload[offset: offset + 4])[0]
         self.updatescreen(addr, "server> setting time to %d/%d/%d %d:%02d" %
                                    (year, month, day, hour, minute))
         self.sigcontainer.add(self)
